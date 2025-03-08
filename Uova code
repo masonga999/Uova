@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordine Uova</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        input, button { margin: 5px; padding: 8px; }
+    </style>
+</head>
+<body>
+    <h1>Ordina le tue uova</h1>
+    <div>
+        <input type="text" id="customerName" placeholder="Nome Cliente">
+        <input type="number" id="quantity" placeholder="Quantità">
+        <button onclick="addOrder()">Aggiungi Ordine</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Quantità</th>
+                <th>Stato</th>
+                <th>Costo</th>
+                <th>Azione</th>
+            </tr>
+        </thead>
+        <tbody id="ordersTable"></tbody>
+    </table>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js');
+        }
+
+        let orders = [];
+        function addOrder() {
+            const customerName = document.getElementById("customerName").value;
+            const quantity = document.getElementById("quantity").value;
+            if (!customerName || !quantity) return;
+            const newOrder = {
+                id: orders.length + 1,
+                name: customerName,
+                quantity: parseInt(quantity),
+                status: "In preparazione",
+                cost: parseInt(quantity) * 0.5
+            };
+            orders.push(newOrder);
+            document.getElementById("customerName").value = "";
+            document.getElementById("quantity").value = "";
+            renderOrders();
+        }
+        function updateStatus(id) {
+            orders = orders.map(order => order.id === id ? { ...order, status: "Consegnato" } : order);
+            renderOrders();
+        }
+        function renderOrders() {
+            const tableBody = document.getElementById("ordersTable");
+            tableBody.innerHTML = "";
+            orders.forEach(order => {
+                const row = `<tr>
+                    <td>${order.id}</td>
+                    <td>${order.name}</td>
+                    <td>${order.quantity}</td>
+                    <td>${order.status}</td>
+                    <td>€${order.cost.toFixed(2)}</td>
+                    <td>${order.status !== "Consegnato" ? `<button onclick="updateStatus(${order.id})">Consegna</button>` : "Consegnato"}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+    </script>
+</body>
+</html>
